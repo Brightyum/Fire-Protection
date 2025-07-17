@@ -3,6 +3,7 @@
 
 
 backUp
+faiss_index
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
