@@ -1,0 +1,41 @@
+<!-- templates/qa_stream.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>실시간 Q&A</title>
+</head>
+<body>
+  <h2>질문 입력</h2>
+  <form id="qa-form">
+    <textarea name="question" rows="5" cols="50" required></textarea><br>
+    <button type="submit">질문하기</button>
+  </form>
+
+  <h2>응답</h2>
+  <div id="answer-box" style="white-space: pre-wrap; border: 1px solid #ccc; padding: 10px;"></div>
+
+  <script>
+    const form = document.getElementById("qa-form");
+    const answerBox = document.getElementById("answer-box");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      answerBox.textContent = ""; // 초기화
+      const formData = new FormData(form);
+      const response = await fetch("/stream", {
+        method: "POST",
+        body: formData
+      });
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        answerBox.textContent += decoder.decode(value);
+      }
+    });
+  </script>
+</body>
+</html>
