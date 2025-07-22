@@ -1,26 +1,25 @@
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
 from dotenv import load_dotenv
-from RAG.load import Load
+
+# from split import Split
+from RAG.split import Split
 
 
 class VectorStore:
     def __init__(self):
         load_dotenv()
-        self.loader = Load()
-        self.faiss_path = "./faiss_index"
+        self.splitter = Split()
+        self.faiss_path = "./vectorstore"
 
     def get_embedding_model(self):
         embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
         return embedding_model
 
-    def get_documents(self):
-
-        # 문서 분할 후 Document 객체로 저장
-        self.loader.load_chunks_to_document()
-
+    def get_documents(self) -> list[Document]:
         # Document 객체로 초기화
-        documents = self.loader.get_documents()
+        documents = self.splitter.get_splits()
 
         return documents
 

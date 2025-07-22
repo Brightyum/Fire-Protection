@@ -8,13 +8,17 @@ from flask import (
     stream_with_context,
 )
 from RAG.chat_system import ChatSystem
+from RAG.memory_manager import MemoryManager
 
 
 class FlaskApp:
     def __init__(self):
         self.app = Flask(__name__)
         self.chat = ChatSystem()
+        self.memory = MemoryManager()
         self.setup_routes()
+        self.max_entries = 20
+        self.min_entries = 5
 
     # 페이지 라우팅 등록
     def setup_routes(self):
@@ -31,17 +35,28 @@ class FlaskApp:
 
     # stream 대답 라우팅 핸들러
     def stream_answer(self):
+        name = request.form.get("name", "")
         question = request.form.get("question", "")
         if not question:
-            return "질문을 입력하세요.", 400
+            return "이름과 질문을 입력하세요.", 400
 
-        return Response(self.generate_stream(question), content_type="text/plain")
+        return Response(self.generate_stream(question, name), content_type="text/plain")
 
     # 토큰 스트리밍
-    def generate_stream(self, question: str):
+    def generate_stream(self, question: str, name: str):
         stream = True
 
-        for chunk in self.chat.run(question, stream):
+        self.memory.set_data(name, question)
+        all_data = self.memory.get_data()
+
+        if len(all_data) < self.min_entries:
+            yield "[시스템] 대화가 저장되고 있습니다."
+            return
+
+        if len(all_data) > self.max_entries:
+            all_data = self.memory.get_recent_data()
+
+        for chunk in self.chat.run(all_data, stream):
             yield chunk
 
     # 서버 실행
