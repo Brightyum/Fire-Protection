@@ -4,9 +4,13 @@ from langchain_core.documents import Document
 import matplotlib.pyplot as plt
 import koreanize_matplotlib
 import numpy as np
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # 1. 벡터스토어 로딩
-vectorstore = FAISS.load_local("./faiss_index", OpenAIEmbeddings(),allow_dangerous_deserialization=True)
+vectorstore = FAISS.load_local("./vectorstore", OpenAIEmbeddings(model="text-embedding-3-small"),allow_dangerous_deserialization=True)
+
 
 # 2. 질의 입력 및 유사 문서 검색
 query = "SOP 212에서 일반 건축물 화재 대응 시 주의사항은?"

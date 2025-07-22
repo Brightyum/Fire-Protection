@@ -4,12 +4,14 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
 from RAG.vectorstore import VectorStore
+from RAG.memory_manager import MemoryManager
 
 
 class ChatSystem:
-    def __init__(self, vectorestore_path="./faiss_index"):
+    def __init__(self):
         load_dotenv()
         self.vectorstore = VectorStore().load_vectorstore()
+        self.memory = MemoryManager()
 
     # 거대언어모델 openAI gpt-4o로 생성
     def get_llm(self, stream=False):
@@ -22,14 +24,17 @@ class ChatSystem:
             (
                 "system",
                 """
-              # Role
+                # Role
                 You are an AI assistant specialized in disaster response domain, especially command-control (지휘통제) and SOP-based operations. 
                 You work within a Retrieval-Augmented Generation (RAG) pipeline to answer mission-critical queries.
+                Analyzes conversations between users and points out missing SOP procedures or corrections.
+                You must answer in Korean.
 
                 # Instruction
                 Generate a clear, operationally structured answer by logically integrating the retrieved content. 
                 Use complete paragraphs, but apply concise expression. 
-                When the question involves a process, list steps in order. Use SOP-specific terminology where possible.
+                Specify the SOP number and name in a footnote.
+                If any SOP procedures are missing, supplement them with documentation and provide explanations.
 
                 # Constraint
                 - Only use information from the given context.
@@ -38,7 +43,7 @@ class ChatSystem:
   
               """,
             ),
-            ("human", "#Context: {context}\n#Question: {question}"),
+            ("human", "#Context: {context}\n#Dialogue: {data}"),
         ]
 
         return messages
@@ -54,8 +59,22 @@ class ChatSystem:
 
         return prompt | llm | StrOutputParser()
 
-    def run(self, question: str, stream=False):
-        docs = self.vectorstore.similarity_search(question, k=4)
+    def get_json_to_text(self, datas):
+        lines = []
+        for data in datas:
+            name = data["이름"]
+            content = data["내용"]
+            time = data["시간"]
+            line = f"{name}: {content}({time})"
+            lines.append(line)
+
+        result = "\n".join(lines)
+        return result
+
+    def run(self, all_data, stream=False):
+        dialogue_text = self.get_json_to_text(all_data)
+
+        docs = self.vectorstore.similarity_search(dialogue_text, k=4)
 
         contents = []
         for doc in docs:
@@ -63,9 +82,13 @@ class ChatSystem:
 
         context = "\n\n".join(contents)
 
+        data = self.memory.get_recent_data()
+
         chain = self.get_chain(stream)
 
+        inputs = {"context": context, "data": dialogue_text}
+
         if stream:
-            return chain.stream({"question": question, "context": context})
+            return chain.stream(inputs)
         else:
-            return chain.invoke({"question": question, "context": context})
+            return chain.invoke(inputs)
