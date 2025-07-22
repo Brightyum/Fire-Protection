@@ -5,7 +5,7 @@ import os
 class Load:
     def __init__(self):
         self.txt_file_path_list = [
-            "TXT\재난현장표준작전절차.txt",  # 원본
+            # "TXT\재난현장표준작전절차.txt",  # 원본
             "TXT\재난현장표준작전절차_지휘통제절차.txt",  # 지휘통제절차 SOP 100번대
             "TXT\재난현장표준작전절차_화재유형별 표준작전절차.txt",  # 화재유형 SOP 200번대
             "TXT\재난현장표준작전절차_사고유형별 표준작전절차.txt",  # 사고유형 SOP 300번대

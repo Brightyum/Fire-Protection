@@ -2,6 +2,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
 from RAG.load import Load
+# from load import Load
 
 
 class VectorStore:
