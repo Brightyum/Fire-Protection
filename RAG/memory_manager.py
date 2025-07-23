@@ -20,10 +20,6 @@ class MemoryManager:
 
         return data
 
-    def get_recent_data(self):
-        data = self.get_data()
-        return data[-self.keep_entries :]
-
     def save_data(self, data):
         with open(self.filepath, "w", encoding="utf-8") as file:
             json.dump(data, file, indent=4, ensure_ascii=False)

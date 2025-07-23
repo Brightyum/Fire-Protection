@@ -3,9 +3,8 @@ from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
 )
 from langchain_core.documents import Document
-from RAG.load import Load
-
-# from load import Load
+# from RAG.load import Load
+from load import Load
 
 
 class Split:
@@ -63,8 +62,12 @@ class Split:
 
 if __name__ == "__main__":
     split = Split()
-    result = split.get_splits()
+    result1 = split.get_md_splits()
+    result2 = split.get_splits()
+    # print(len(result))
 
-    print(len(result))
-    # for i in result:
+    # for i in result1[3:7]:
     #     print(i)
+
+    for i in result2[5:10]:
+        print(i)

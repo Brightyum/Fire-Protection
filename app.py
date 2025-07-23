@@ -37,7 +37,7 @@ class FlaskApp:
     def stream_answer(self):
         name = request.form.get("name", "")
         question = request.form.get("question", "")
-        if not question:
+        if not question and not name:
             return "이름과 질문을 입력하세요.", 400
 
         return Response(self.generate_stream(question, name), content_type="text/plain")
@@ -53,8 +53,8 @@ class FlaskApp:
             yield "[시스템] 대화가 저장되고 있습니다."
             return
 
-        if len(all_data) > self.max_entries:
-            all_data = self.memory.get_recent_data()
+        # if len(all_data) > self.max_entries:
+        #     all_data = self.memory.get_recent_data()
 
         for chunk in self.chat.run(all_data, stream):
             yield chunk
